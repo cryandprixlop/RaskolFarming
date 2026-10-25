@@ -1,0 +1,15 @@
+name: RaskolFarming
+version: ${project.version}
+main: ru.raskol.farming.RaskolFarming
+api-version: '1.21'
+author: Baltimor
+description: Farming with zones, hoes and golden wheat.
+softdepend: [WorldEdit, Towny, Vault]
+commands:
+  farm:
+    description: Farming commands
+    usage: /farm help
+permissions:
+  farming.admin:
+    description: Admin farming commands
+    default: op
