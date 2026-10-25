@@ -1,42 +1,41 @@
 package ru.raskol.farming.hook;
 
-import com.sk89q.worldedit.IncompleteRegionException;
-import com.sk89q.worldedit.bukkit.BukkitAdapter;
-import com.sk89q.worldedit.math.BlockVector3;
-import com.sk89q.worldedit.regions.Region;
-import com.sk89q.worldedit.world.World;
 import org.bukkit.entity.Player;
 import ru.raskol.farming.RaskolFarming;
+import ru.raskol.farming.model.Region;
 
 public final class SelectionHook {
+
     private final RaskolFarming plugin;
+
     public SelectionHook(RaskolFarming plugin) { this.plugin = plugin; }
 
     public boolean isAvailable() {
         return plugin.getServer().getPluginManager().getPlugin("WorldEdit") != null;
     }
 
-    public ru.raskol.farming.model.Region getSelection(Player player) {
+    public Region getSelection(Player player) {
         try {
-            Class<?> c = Class.forName("com.sk89q.worldedit.WorldEdit");
-            Object we = c.getMethod("getInstance").invoke(null);
-            Object session = we.getClass()
-                    .getMethod("getSessionManager")
-                    .invoke(we)
-                    .getClass()
-                    .getMethod("get", com.sk89q.worldedit.entity.Player.class)
-                    .invoke(we.getClass().getMethod("getSessionManager").invoke(we),
-                            BukkitAdapter.adapt(player));
-            Object sel = session.getClass()
-                    .getMethod("getSelection", World.class)
-                    .invoke(session, (Object) null);
-            if (sel == null) return null;
-            BlockVector3 min = ((Region) sel).getMinimumPoint();
-            BlockVector3 max = ((Region) sel).getMaximumPoint();
-            ru.raskol.farming.model.Region r = new ru.raskol.farming.model.Region();
+            Object wep = plugin.getServer().getPluginManager().getPlugin("WorldEdit");
+            if (wep == null) return null;
+            Object session = wep.getClass().getMethod("getSession", Player.class).invoke(wep, player);
+            if (session == null) return null;
+            Object weWorld = Class.forName("com.sk89q.worldedit.bukkit.BukkitAdapter")
+                    .getMethod("adapt", org.bukkit.World.class).invoke(null, player.getWorld());
+            Object region = session.getClass()
+                    .getMethod("getSelection", Class.forName("com.sk89q.worldedit.world.World"))
+                    .invoke(session, weWorld);
+            if (region == null) return null;
+            Object min = region.getClass().getMethod("getMinimumPoint").invoke(region);
+            Object max = region.getClass().getMethod("getMaximumPoint").invoke(region);
+            Region r = new Region();
             r.world = player.getWorld().getName();
-            r.x1 = min.x(); r.y1 = min.y(); r.z1 = min.z();
-            r.x2 = max.x(); r.y2 = max.y(); r.z2 = max.z();
+            r.x1 = (Integer) min.getClass().getMethod("getX").invoke(min);
+            r.y1 = (Integer) min.getClass().getMethod("getY").invoke(min);
+            r.z1 = (Integer) min.getClass().getMethod("getZ").invoke(min);
+            r.x2 = (Integer) max.getClass().getMethod("getX").invoke(max);
+            r.y2 = (Integer) max.getClass().getMethod("getY").invoke(max);
+            r.z2 = (Integer) max.getClass().getMethod("getZ").invoke(max);
             return r;
         } catch (Throwable t) {
             return null;
