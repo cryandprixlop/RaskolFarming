@@ -1,6 +1,5 @@
 package ru.raskol.farming.listener;
 
-import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -16,6 +15,7 @@ import ru.raskol.farming.service.HoeService;
 import ru.raskol.farming.store.FarmStore;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -23,11 +23,15 @@ import java.util.UUID;
  * Сбор урожая:
  * 1) в зоне фермы — блок встаёт в очередь регенерации (interval-minutes);
  * 2) рулетка лута мотыги: золотая пшеница -> фрагмент -> множитель дропа.
- * Одна рулетка на игрока в окне 2 сек.
+ * Списки культур и шансы работают даже без серверного конфига.
  */
 public final class CropListener implements Listener {
 
     private static final long ROLL_WINDOW_MS = 2000;
+
+    private static final List<String> DEFAULT_CROPS = List.of(
+            "WHEAT", "CARROTS", "POTATOES", "BEETROOTS", "NETHER_WART", "COCOA",
+            "MELON", "PUMPKIN", "SUGAR_CANE", "CACTUS", "BAMBOO", "SWEET_BERRY_BUSH");
 
     private static final Map<String, Double> DEFAULTS = Map.ofEntries(
             Map.entry("vanilla.golden-chance", 0.001),
@@ -54,35 +58,42 @@ public final class CropListener implements Listener {
         this.plugin = plugin;
         this.store = store;
         this.hoeService = hoeService;
-        if (plugin.getConfig().getConfigurationSection("loot") == null) {
-            plugin.getLogger().warning("[Farming] В серверном config.yml нет секции 'loot'! "
-                    + "Удали plugins/RaskolFarming/config.yml и перезапусти. Используются дефолты.");
+        if (plugin.getConfig().getStringList("crops").isEmpty()) {
+            plugin.getLogger().warning("[Farming] В серверном config.yml нет списка 'crops'! "
+                    + "Использую встроенные дефолты. Удали plugins/RaskolFarming/config.yml и перезапусти.");
         }
+    }
+
+    private List<String> cropList() {
+        List<String> list = plugin.getConfig().getStringList("crops");
+        return list.isEmpty() ? DEFAULT_CROPS : list;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onCropBreak(BlockBreakEvent event) {
         Block block = event.getBlock();
         String mat = block.getType().name();
-        if (!plugin.getConfig().getStringList("crops").contains(mat)) return;
+        if (!cropList().contains(mat)) return;
 
         Player player = event.getPlayer();
 
         // 1) Очередь регенерации — только в зоне фермы
         FarmZone zone = store.zoneAt(block.getLocation());
         if (zone != null) {
+            double minutes = plugin.getConfig().getDouble("regen.interval-minutes", 15.0);
             PendingCrop p = new PendingCrop();
             p.world = block.getWorld().getName();
             p.x = block.getX();
             p.y = block.getY();
             p.z = block.getZ();
             p.material = mat;
-            p.restoreAtEpochSeconds = System.currentTimeMillis() / 1000L
-                    + (long) (plugin.getConfig().getDouble("regen.interval-minutes", 15.0) * 60.0);
+            p.restoreAtEpochSeconds = System.currentTimeMillis() / 1000L + (long) (minutes * 60.0);
             store.addPending(p);
+            plugin.getLogger().info("[Farming] queued regen: " + mat + " at "
+                    + p.x + "," + p.y + "," + p.z + " in " + (int) minutes + " min (zone " + zone.name + ")");
         }
 
-        // 2) Рулетка лута (мотыгой, одна на игрока в окне 2 сек)
+        // 2) Рулетка лута (одна на игрока в окне 2 сек)
         ItemStack tool = player.getInventory().getItemInMainHand();
         HoeTier tier = hoeService.tierOf(tool);
         if (tier == null) return;
