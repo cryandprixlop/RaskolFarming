@@ -1,0 +1,54 @@
+# ===== RaskolFarming =====
+regen:
+  interval-minutes: 15
+
+hoe:
+  craft-success-chance: 25.0
+
+license:
+  default-price: 500.0
+  duration-days: 30
+
+town-account-prefix: "town-"
+
+# Культуры, участвующие в регенерации
+crops:
+  - WHEAT
+  - CARROTS
+  - POTATOES
+  - BEETROOTS
+  - NETHER_WART
+  - COCOA
+  - MELON
+  - PUMPKIN
+  - SUGAR_CANE
+  - CACTUS
+  - BAMBOO
+  - SWEET_BERRY_BUSH
+
+hoes:
+  - WOODEN_HOE
+  - STONE_HOE
+  - IRON_HOE
+  - GOLDEN_HOE
+  - DIAMOND_HOE
+  - NETHERITE_HOE
+
+loot:
+  vanilla:
+    golden-chance: 0.001
+    next-fragment-chance: 5.0
+    double-chance: 2.0
+  grandpa:
+    golden-chance: 0.002
+    next-fragment-chance: 4.0
+    double-chance: 4.0
+  experienced:
+    golden-chance: 0.01
+    next-fragment-chance: 4.0
+    double-chance: 20.0
+  dulklass:
+    golden-chance: 0.5
+    double-chance: 35.0
+    triple-chance: 15.0
+    quad-chance: 10.0
