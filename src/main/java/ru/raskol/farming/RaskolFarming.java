@@ -12,9 +12,11 @@ import ru.raskol.farming.hook.TownyHook;
 import ru.raskol.farming.hook.VaultHook;
 import ru.raskol.farming.listener.CropListener;
 import ru.raskol.farming.listener.FarmLicenseListener;
+import ru.raskol.farming.listener.FarmZoneGuardListener;
 import ru.raskol.farming.listener.HoeCraftListener;
 import ru.raskol.farming.listener.HoeDurabilityListener;
 import ru.raskol.farming.model.HoeTier;
+import ru.raskol.farming.service.FarmZoneGuardService;
 import ru.raskol.farming.service.HoeService;
 import ru.raskol.farming.service.LicenseService;
 import ru.raskol.farming.store.FarmStore;
@@ -30,6 +32,7 @@ public final class RaskolFarming extends JavaPlugin {
     private VaultHook vaultHook;
     private HoeService hoeService;
     private LicenseService licenseService;
+    private FarmZoneGuardService guardService;
 
     @Override
     public void onEnable() {
@@ -43,6 +46,7 @@ public final class RaskolFarming extends JavaPlugin {
         vaultHook = new VaultHook(this);
         hoeService = new HoeService(this);
         licenseService = new LicenseService(this, licenseStore, vaultHook, townyHook);
+        guardService = new FarmZoneGuardService(this);
 
         registerHoeRecipes();
 
@@ -55,6 +59,7 @@ public final class RaskolFarming extends JavaPlugin {
         }
 
         getServer().getPluginManager().registerEvents(new FarmLicenseListener(this, licenseService), this);
+        getServer().getPluginManager().registerEvents(new FarmZoneGuardListener(this, store, guardService), this);
         getServer().getPluginManager().registerEvents(new CropListener(this, store, hoeService), this);
         getServer().getPluginManager().registerEvents(new HoeCraftListener(this, hoeService), this);
         getServer().getPluginManager().registerEvents(new HoeDurabilityListener(this, hoeService), this);
@@ -66,7 +71,6 @@ public final class RaskolFarming extends JavaPlugin {
                 + " включён. Ферм: " + store.all().size()
                 + ", в очереди регенерации: " + store.pending().size()
                 + ", лицензий активно: " + licenseStore.activeCount()
-                + ". Интервал: " + getConfig().getDouble("regen.interval-minutes", 15.0) + " мин."
                 + ". Towny: " + (townyHook.isAvailable() ? "да" : "нет")
                 + ". Vault: " + (vaultHook.isAvailable() ? "да" : "нет") + ".");
     }
@@ -95,4 +99,5 @@ public final class RaskolFarming extends JavaPlugin {
     public FarmStore getStore() { return store; }
     public HoeService getHoeService() { return hoeService; }
     public LicenseService getLicenseService() { return licenseService; }
+    public FarmZoneGuardService getGuardService() { return guardService; }
 }
