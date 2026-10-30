@@ -72,7 +72,7 @@ public final class FarmCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage("§e/farm hoe give <tier> <игрок> [кол-во] §7— выдать мотыгу");
         sender.sendMessage("§e/farm fragment give <tier> <игрок> [кол-во] §7— выдать фрагмент");
         sender.sendMessage("§e/farm golden give <игрок> [кол-во] §7— выдать золотую пшеницу");
-        sender.sendMessage("§e/farm reload §7— перезагрузить конфиг");
+        sender.sendMessage("§e/farm reload §7— перезагрузить конфиг и whitelist зоны");
         sender.sendMessage("§7Тиры: VANILLA, GRANDPA, EXPERIENCED, DULKLASS");
     }
 
@@ -122,7 +122,8 @@ public final class FarmCommand implements CommandExecutor, TabCompleter {
     private void handleReload(CommandSender sender) {
         if (!admin(sender)) return;
         plugin.reloadConfig();
-        sender.sendMessage("§aКонфиг перезагружен.");
+        plugin.getGuardService().reload();
+        sender.sendMessage("§aКонфиг и whitelist зоны фермы перезагружены.");
     }
 
     private void handleLicense(CommandSender sender, String[] args) {
