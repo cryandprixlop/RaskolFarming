@@ -11,7 +11,6 @@ license:
 
 town-account-prefix: "town-"
 
-# Культуры, участвующие в регенерации
 crops:
   - WHEAT
   - CARROTS
@@ -25,6 +24,21 @@ crops:
   - CACTUS
   - BAMBOO
   - SWEET_BERRY_BUSH
+
+# Доп. блоки, которые можно ломать в зоне фермы (почва под посадку)
+farm:
+  allowed-extra:
+    - FARMLAND
+    - DIRT
+    - GRASS_BLOCK
+    - COARSE_DIRT
+    - PODZOL
+    - SOUL_SAND
+    - WARPED_NYLIUM
+    - CRIMSON_NYLIUM
+    - MYCELIUM
+    - MUD
+    - MOSS_BLOCK
 
 hoes:
   - WOODEN_HOE
